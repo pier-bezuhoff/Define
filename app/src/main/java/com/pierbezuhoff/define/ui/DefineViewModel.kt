@@ -7,76 +7,49 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.CreationExtras
-import java.io.File
-import java.io.FileNotFoundException
+import com.pierbezuhoff.define.data.GOOGLE_DEFINE_QUERY
+import com.pierbezuhoff.define.data.Query
+import com.pierbezuhoff.define.data.QueryVariant
+import com.pierbezuhoff.define.data.loadQueryHistoryFile
+import com.pierbezuhoff.define.data.loadQueryVariantsFile
+import com.pierbezuhoff.define.data.saveQueryHistoryFile
+import com.pierbezuhoff.define.data.saveQueryVariantsFile
 
 class DefineViewModel(
     private val applicationContext: Context,
 ) : ViewModel() {
-    private val queryVariantsFile = File(applicationContext.filesDir, QUERY_VARIANTS_FILENAME)
-    private val queryHistoryFile = File(applicationContext.filesDir, QUERY_HISTORY_FILENAME)
     private var fileLoadingIsDone = false
 
-    var queryVariants: List<String> by mutableStateOf(listOf(
+    var queryVariants: List<QueryVariant> by mutableStateOf(listOf(
         GOOGLE_DEFINE_QUERY
     ))
-    var queryHistory: List<String> by mutableStateOf(listOf())
+    var queryHistory: List<Query> by mutableStateOf(listOf())
 
     // bad name...
-    fun loadFiles() {
+    // TODO: coroutines
+    fun loadInitialDataFromDisk() {
         if (!fileLoadingIsDone) {
-            loadQueryVariantsFile()
-            loadQueryHistoryFile()
+            loadQueryVariantsFile(applicationContext, QUERY_VARIANTS_FILENAME)
+                .onSuccess { queryVariants = it }
+            loadQueryHistoryFile(applicationContext, QUERY_HISTORY_FILENAME, queryVariants.size)
+                .onSuccess { queryHistory = it }
             fileLoadingIsDone = true
         }
     }
 
-    private fun loadQueryVariantsFile() {
-        try {
-            applicationContext.openFileInput(QUERY_VARIANTS_FILENAME)
-                .bufferedReader()
-                .useLines { lines ->
-                    queryVariants = lines.toList()
-                }
-        } catch (_: FileNotFoundException) {
-            // triggers on first install
-            println("No $QUERY_VARIANTS_FILENAME found")
-        }
+    fun persistDataToDisk() {
+        saveQueryVariantsFile(applicationContext, QUERY_VARIANTS_FILENAME, queryVariants)
+        saveQueryHistoryFile(applicationContext, QUERY_HISTORY_FILENAME, queryHistory)
     }
 
-    private fun loadQueryHistoryFile() {
-        try {
-            applicationContext.openFileInput(QUERY_HISTORY_FILENAME)
-                .bufferedReader()
-                .useLines { lines ->
-                    queryHistory = lines.toList()
-                }
-        } catch (_: FileNotFoundException) {
-            // triggers on first install
-            println("No $QUERY_HISTORY_FILENAME found")
-        }
+    // good new unique color default each time (eg hue % 30 in okhsl)
+    fun createNewQueryVariant(queryVariant: QueryVariant) {
+        queryVariants += queryVariant
     }
 
-    fun persistState() {
-        try {
-            // automatically creates new file if needed
-            applicationContext.openFileOutput(QUERY_VARIANTS_FILENAME, Context.MODE_PRIVATE)
-                .bufferedWriter()
-                .use {
-                    it.write(queryVariants.joinToString("\n"))
-                }
-        } catch (e: Exception) {
-            e.printStackTrace()
-        }
-        try {
-            applicationContext.openFileOutput(QUERY_HISTORY_FILENAME, Context.MODE_PRIVATE)
-                .bufferedWriter()
-                .use {
-                    it.write(queryHistory.joinToString("\n"))
-                }
-        } catch (e: Exception) {
-            e.printStackTrace()
-        }
+    fun recordNewQuery(query: Query) {
+        // sus performance
+        queryHistory = listOf(query) + queryHistory
     }
 
     companion object {
@@ -94,8 +67,6 @@ class DefineViewModel(
                 ) as T
             }
         }
-        const val GOOGLE_DEFINE_QUERY = ""
-        // '\n'-separated list
         const val QUERY_VARIANTS_FILENAME = "query-variants.list"
         const val QUERY_HISTORY_FILENAME = "query-history.list"
     }
