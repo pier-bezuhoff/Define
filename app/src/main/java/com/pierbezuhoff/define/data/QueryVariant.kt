@@ -7,12 +7,26 @@ data class QueryVariant(
     /** `$` is to be replaced with query content */
     val template: String,
     val color: Color,
-)
+) {
+    init {
+        require(template.any { it == '$' }) {
+            "Template must have a '$' to be substituted with query content"
+        }
+    }
 
-val GOOGLE_DEFINE_QUERY = QueryVariant(
-    "https://www.google.com/search?q=define%3A$",
-    Color.Blue,
-)
+    fun render(content: String): String {
+        return template.replace("$", content)
+    }
+
+    companion object {
+        val GOOGLE_DEFINE = QueryVariant(
+            "https://www.google.com/search?q=define%3A$",
+            Color.Blue,
+        )
+        val DEFAULT: QueryVariant = GOOGLE_DEFINE
+    }
+}
+
 // query variants are stored as \n-separated list of
 // `<colorULong> <template>`
 fun loadQueryVariantsFile(

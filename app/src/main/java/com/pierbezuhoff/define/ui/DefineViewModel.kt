@@ -1,55 +1,106 @@
 package com.pierbezuhoff.define.ui
 
 import android.content.Context
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
+import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.CreationExtras
-import com.pierbezuhoff.define.data.GOOGLE_DEFINE_QUERY
 import com.pierbezuhoff.define.data.Query
 import com.pierbezuhoff.define.data.QueryVariant
 import com.pierbezuhoff.define.data.loadQueryHistoryFile
 import com.pierbezuhoff.define.data.loadQueryVariantsFile
 import com.pierbezuhoff.define.data.saveQueryHistoryFile
 import com.pierbezuhoff.define.data.saveQueryVariantsFile
+import com.pierbezuhoff.define.dataStore
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 
 class DefineViewModel(
     private val applicationContext: Context,
+    private val dataStore: DataStore<Preferences>,
 ) : ViewModel() {
     private var fileLoadingIsDone = false
+    private var fileLoadingJob: Job? = null
+    private var fileSavingJob: Job? = null
 
-    var queryVariants: List<QueryVariant> by mutableStateOf(listOf(
-        GOOGLE_DEFINE_QUERY
-    ))
-    var queryHistory: List<Query> by mutableStateOf(listOf())
+    val queryVariants: MutableStateFlow<List<QueryVariant>> = MutableStateFlow(
+        listOf(QueryVariant.DEFAULT)
+    )
+    val queryHistory: MutableStateFlow<List<Query>> = MutableStateFlow(
+        emptyList()
+    )
+    private val queryVariantIndex: StateFlow<Int> = dataStore.data
+        .map { it[QUERY_VARIANT_INDEX] ?: 0 }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000L), 0)
+    val selectedQueryVariant: StateFlow<QueryVariant> =
+        queryVariantIndex.combine(queryVariants) { index, variants ->
+            if (index in variants.indices)
+                variants[index]
+            else
+                QueryVariant.DEFAULT
+        }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000L), QueryVariant.DEFAULT)
 
-    // bad name...
-    // TODO: coroutines
     fun loadInitialDataFromDisk() {
-        if (!fileLoadingIsDone) {
-            loadQueryVariantsFile(applicationContext, QUERY_VARIANTS_FILENAME)
-                .onSuccess { queryVariants = it }
-            loadQueryHistoryFile(applicationContext, QUERY_HISTORY_FILENAME, queryVariants.size)
-                .onSuccess { queryHistory = it }
-            fileLoadingIsDone = true
+        if (!fileLoadingIsDone && fileLoadingJob?.isActive != true) {
+            fileLoadingJob = viewModelScope.launch(Dispatchers.IO) {
+                var queryVariantsSize = queryVariants.value.size
+                loadQueryVariantsFile(applicationContext, QUERY_VARIANTS_FILENAME)
+                    .onSuccess { newQueryVariants ->
+                        queryVariantsSize = newQueryVariants.size
+                        viewModelScope.launch {
+                            queryVariants.update { newQueryVariants }
+                        }
+                    }
+                loadQueryHistoryFile(applicationContext, QUERY_HISTORY_FILENAME, queryVariantsSize)
+                    .onSuccess { newQueryHistory ->
+                        viewModelScope.launch {
+                            queryHistory.update { newQueryHistory }
+                        }
+                    }
+                fileLoadingIsDone = true
+                fileLoadingJob = null
+            }
         }
     }
 
     fun persistDataToDisk() {
-        saveQueryVariantsFile(applicationContext, QUERY_VARIANTS_FILENAME, queryVariants)
-        saveQueryHistoryFile(applicationContext, QUERY_HISTORY_FILENAME, queryHistory)
+        if (fileSavingJob?.isActive != true) {
+            fileSavingJob = viewModelScope.launch(Dispatchers.IO) {
+                saveQueryVariantsFile(applicationContext, QUERY_VARIANTS_FILENAME, queryVariants.value)
+                saveQueryHistoryFile(applicationContext, QUERY_HISTORY_FILENAME, queryHistory.value)
+                fileSavingJob = null
+            }
+        }
     }
 
     // good new unique color default each time (eg hue % 30 in okhsl)
     fun createNewQueryVariant(queryVariant: QueryVariant) {
-        queryVariants += queryVariant
+        queryVariants.update { it + queryVariant }
     }
 
     fun recordNewQuery(query: Query) {
         // sus performance
-        queryHistory = listOf(query) + queryHistory
+        queryHistory.update { listOf(query) + it }
+    }
+
+    fun changeQueryVariant(newQueryVariantIndex: Int) {
+        viewModelScope.launch {
+            dataStore.edit { settings ->
+                settings[QUERY_VARIANT_INDEX] = newQueryVariantIndex
+            }
+        }
     }
 
     companion object {
@@ -64,10 +115,13 @@ class DefineViewModel(
                 //val savedStateHandle = extras.createSavedStateHandle()
                 return DefineViewModel(
                     application.applicationContext,
+                    application.dataStore,
                 ) as T
             }
         }
-        const val QUERY_VARIANTS_FILENAME = "query-variants.list"
-        const val QUERY_HISTORY_FILENAME = "query-history.list"
+        private const val QUERY_VARIANTS_FILENAME = "query-variants.list"
+        private const val QUERY_HISTORY_FILENAME = "query-history.list"
+
+        private val QUERY_VARIANT_INDEX = intPreferencesKey("queryVariantIndex")
     }
 }

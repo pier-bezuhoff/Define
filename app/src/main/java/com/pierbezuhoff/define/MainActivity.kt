@@ -1,19 +1,19 @@
 package com.pierbezuhoff.define
 
+import android.content.Context
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.preferencesDataStore
 import com.pierbezuhoff.define.ui.DefineViewModel
+import com.pierbezuhoff.define.ui.MainScreen
 import com.pierbezuhoff.define.ui.theme.DefineTheme
+
+val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "settings")
 
 class MainActivity : ComponentActivity() {
     private val defineViewModel: DefineViewModel by viewModels { DefineViewModel.Factory }
@@ -24,29 +24,17 @@ class MainActivity : ComponentActivity() {
         defineViewModel.loadInitialDataFromDisk()
         setContent {
             DefineTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Greeting(
-                        name = "Android",
-                        modifier = Modifier.padding(innerPadding)
-                    )
-                }
+                MainScreen(
+                    viewModel = defineViewModel,
+                    quitApp = { finishAndRemoveTask() }
+                )
             }
         }
     }
-}
 
-@Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
-}
-
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    DefineTheme {
-        Greeting("Android")
+    // onDestroy doesn't proc, idk why (maybe no compat)
+    override fun onPause() {
+        super.onPause()
+        defineViewModel.persistDataToDisk()
     }
 }
