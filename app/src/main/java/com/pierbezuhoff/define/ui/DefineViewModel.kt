@@ -41,11 +41,11 @@ class DefineViewModel(
     val queryHistory: MutableStateFlow<List<Query>> = MutableStateFlow(
         emptyList()
     )
-    private val queryVariantIndex: StateFlow<Int> = dataStore.data
+    val selectedQueryVariantIndex: StateFlow<Int> = dataStore.data
         .map { it[QUERY_VARIANT_INDEX] ?: 0 }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000L), 0)
     val selectedQueryVariant: StateFlow<QueryVariant> =
-        queryVariantIndex.combine(queryVariants) { index, variants ->
+        selectedQueryVariantIndex.combine(queryVariants) { index, variants ->
             if (index in variants.indices)
                 variants[index]
             else
@@ -53,11 +53,13 @@ class DefineViewModel(
         }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000L), QueryVariant.DEFAULT)
 
     fun loadInitialDataFromDisk() {
+        println("loading data...")
         if (!fileLoadingIsDone && fileLoadingJob?.isActive != true) {
             fileLoadingJob = viewModelScope.launch(Dispatchers.IO) {
                 var queryVariantsSize = queryVariants.value.size
                 loadQueryVariantsFile(applicationContext, QUERY_VARIANTS_FILENAME)
                     .onSuccess { newQueryVariants ->
+                        println("loaded qv: $newQueryVariants")
                         queryVariantsSize = newQueryVariants.size
                         viewModelScope.launch {
                             queryVariants.update { newQueryVariants }
@@ -65,22 +67,26 @@ class DefineViewModel(
                     }
                 loadQueryHistoryFile(applicationContext, QUERY_HISTORY_FILENAME, queryVariantsSize)
                     .onSuccess { newQueryHistory ->
+                        println("loaded qh: $newQueryHistory")
                         viewModelScope.launch {
                             queryHistory.update { newQueryHistory }
                         }
                     }
                 fileLoadingIsDone = true
                 fileLoadingJob = null
+                println("data loaded successfully.")
             }
         }
     }
 
     fun persistDataToDisk() {
+        println("persisting data...")
         if (fileSavingJob?.isActive != true) {
             fileSavingJob = viewModelScope.launch(Dispatchers.IO) {
                 saveQueryVariantsFile(applicationContext, QUERY_VARIANTS_FILENAME, queryVariants.value)
                 saveQueryHistoryFile(applicationContext, QUERY_HISTORY_FILENAME, queryHistory.value)
                 fileSavingJob = null
+                println("data persisted successfully.")
             }
         }
     }
@@ -92,7 +98,12 @@ class DefineViewModel(
 
     fun recordNewQuery(query: Query) {
         // sus performance
-        queryHistory.update { listOf(query) + it }
+        queryHistory.update {
+            if (query in it)
+                it
+            else
+                listOf(query) + it
+        }
     }
 
     fun changeQueryVariant(newQueryVariantIndex: Int) {
@@ -101,6 +112,11 @@ class DefineViewModel(
                 settings[QUERY_VARIANT_INDEX] = newQueryVariantIndex
             }
         }
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        persistDataToDisk()
     }
 
     companion object {

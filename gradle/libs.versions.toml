@@ -5,7 +5,7 @@ composeBom = "2025.06.01"
 coreKtx = "1.16.0"
 lifecycle = "2.9.1"
 activityCompose = "1.10.1"
-androidx-browser = "1.9.0"
+androidx-browser = "1.8.0" # 1.9 requires compile api 36 & newer agp
 datastore = "1.1.7"
 serialization = "1.8.1"
 

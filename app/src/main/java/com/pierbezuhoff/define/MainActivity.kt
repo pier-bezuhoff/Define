@@ -6,6 +6,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
+import androidx.compose.runtime.LaunchedEffect
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.preferencesDataStore
@@ -21,13 +22,15 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-        defineViewModel.loadInitialDataFromDisk()
         setContent {
             DefineTheme {
                 MainScreen(
                     viewModel = defineViewModel,
                     quitApp = { finishAndRemoveTask() }
                 )
+                LaunchedEffect(defineViewModel) {
+                    defineViewModel.loadInitialDataFromDisk()
+                }
             }
         }
     }

@@ -21,7 +21,7 @@ data class QueryVariant(
     companion object {
         val GOOGLE_DEFINE = QueryVariant(
             "https://www.google.com/search?q=define%3A$",
-            Color.Blue,
+            Color(0, 100, 200, 120),
         )
         val DEFAULT: QueryVariant = GOOGLE_DEFINE
     }

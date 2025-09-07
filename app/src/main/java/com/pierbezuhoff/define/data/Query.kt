@@ -47,7 +47,7 @@ fun saveQueryHistoryFile(
         .bufferedWriter()
         .use {
             queryHistory.forEach { query ->
-                it.write(query.queryVariantIndex)
+                it.write(query.queryVariantIndex.toString())
                 it.write(" ")
                 it.write(query.content)
                 it.write("\n")
