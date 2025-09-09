@@ -52,6 +52,7 @@ import kotlinx.coroutines.launch
 @Composable
 fun MainScreen(
     viewModel: DefineViewModel,
+    openTab: (url: String) -> Unit,
     quitApp: () -> Unit,
 ) {
     val queryVariants: List<QueryVariant> by
@@ -68,15 +69,17 @@ fun MainScreen(
     val focusManager = LocalFocusManager.current
     val snackbarHostState = remember { SnackbarHostState() }
     val coroutineScope = rememberCoroutineScope()
+
     fun search() {
         val queryContent = queryTFValue.text
-        viewModel.recordNewQuery(
-            Query(queryVariantIndex = selectedQueryVariantIndex, content = queryContent)
-        )
         queryTFValue = TextFieldValue("")
         focusManager.clearFocus()
-        coroutineScope.launch {
-            snackbarHostState.showSnackbar("search entered query \"$queryContent\"")
+        if (queryContent.isNotBlank()) {
+            val query = Query(queryVariantIndex = selectedQueryVariantIndex, content = queryContent)
+            val url = selectedQueryVariant.render(query.content)
+            // there is no race condition in ba sing se
+            viewModel.recordNewQuery(query)
+            openTab(url)
         }
     }
     Scaffold(
@@ -146,9 +149,8 @@ fun MainScreen(
                         onClick = {
                             // MAYBE: bubble this query to the top of history
                             queryTFValue = TextFieldValue(query.content, TextRange(query.content.length))
-                            coroutineScope.launch {
-                                snackbarHostState.showSnackbar("query \"${query.content}\"")
-                            }
+                            val url = selectedQueryVariant.render(query.content)
+                            openTab(url)
                         },
                         modifier = Modifier
                             .padding(4.dp)

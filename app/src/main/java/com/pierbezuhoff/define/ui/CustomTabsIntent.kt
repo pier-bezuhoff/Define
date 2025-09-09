@@ -8,7 +8,7 @@ fun buildCustomTabsIntent(
     initialHeightPx: Int,
     lightColorScheme: Boolean,
     @ColorInt toolbarColor: Int,
-) =
+): CustomTabsIntent =
     CustomTabsIntent.Builder()
         .setColorScheme(
             if (lightColorScheme)
@@ -22,7 +22,6 @@ fun buildCustomTabsIntent(
                 .build()
         )
         .setInitialActivityHeightPx(
-//            (Resources.getSystem().displayMetrics.heightPixels * 0.7f).roundToInt(),
             initialHeightPx,
             CustomTabsIntent.ACTIVITY_HEIGHT_ADJUSTABLE
         )
