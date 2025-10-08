@@ -106,6 +106,14 @@ class DefineViewModel(
         }
     }
 
+    fun deleteQueryAt(index: Int) {
+        queryHistory.update {
+            val history = it.toMutableList()
+            history.removeAt(index)
+            history
+        }
+    }
+
     fun changeQueryVariant(newQueryVariantIndex: Int) {
         viewModelScope.launch {
             dataStore.edit { settings ->

@@ -24,6 +24,7 @@ import com.pierbezuhoff.define.ui.MainScreen
 import com.pierbezuhoff.define.ui.buildCustomTabsIntent
 import com.pierbezuhoff.define.ui.theme.DefineTheme
 import androidx.core.net.toUri
+import com.pierbezuhoff.define.ui.App
 import com.pierbezuhoff.define.ui.theme.LocalIsDarkTheme
 import kotlin.math.roundToInt
 
@@ -36,11 +37,11 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            DefineTheme {
+            DefineTheme() {
                 val context = LocalContext.current
                 val darkColorScheme = LocalIsDarkTheme.current
                 val toolbarColor = MaterialTheme.colorScheme.primary
-                MainScreen(
+                App(
                     viewModel = defineViewModel,
                     openTab = { url ->
                         openTab(context, !darkColorScheme, toolbarColor, url)

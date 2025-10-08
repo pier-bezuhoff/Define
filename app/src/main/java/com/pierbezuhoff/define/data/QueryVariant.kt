@@ -7,6 +7,7 @@ data class QueryVariant(
     /** `$` is to be replaced with query content */
     val template: String,
     val color: Color,
+    // name
 ) {
     init {
         require(template.any { it == '$' }) {

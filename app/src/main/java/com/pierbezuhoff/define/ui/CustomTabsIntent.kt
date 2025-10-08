@@ -4,6 +4,7 @@ import androidx.annotation.ColorInt
 import androidx.browser.customtabs.CustomTabColorSchemeParams
 import androidx.browser.customtabs.CustomTabsIntent
 
+// idk it's always full-height for some reason
 fun buildCustomTabsIntent(
     initialHeightPx: Int,
     lightColorScheme: Boolean,
