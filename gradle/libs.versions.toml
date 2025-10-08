@@ -1,13 +1,13 @@
 [versions]
-agp = "8.7.2"
-kotlin = "2.1.21"
-composeBom = "2025.06.01"
-coreKtx = "1.16.0"
-lifecycle = "2.9.1"
-activityCompose = "1.10.1"
-androidx-browser = "1.8.0" # 1.9 requires compile api 36 & newer agp
+agp = "8.10.1"
+kotlin = "2.2.20"
+composeBom = "2025.09.01"
+coreKtx = "1.17.0"
+lifecycle = "2.9.4"
+activityCompose = "1.11.0"
+androidx-browser = "1.9.0"
 datastore = "1.1.7"
-serialization = "1.8.1"
+serialization = "1.9.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }

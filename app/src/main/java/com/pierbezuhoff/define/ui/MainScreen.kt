@@ -71,7 +71,7 @@ fun MainScreen(
     val coroutineScope = rememberCoroutineScope()
 
     fun search() {
-        val queryContent = queryTFValue.text
+        val queryContent = queryTFValue.text.trim()
         queryTFValue = TextFieldValue("")
         focusManager.clearFocus()
         if (queryContent.isNotBlank()) {
