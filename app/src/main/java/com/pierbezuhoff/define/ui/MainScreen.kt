@@ -6,12 +6,10 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
@@ -249,7 +247,7 @@ private fun QueryCard(
                     Icon(
                         painterResource(R.drawable.delete),
                         contentDescription = "Delete",
-                        tint = MaterialTheme.colorScheme.error.copy(alpha = 0.5f),
+                        tint = MaterialTheme.colorScheme.error.copy(alpha = 0.7f),
                     )
                 }
             }
@@ -260,7 +258,7 @@ private fun QueryCard(
 @Preview
 @Composable
 fun MainScreenPreview() {
-    DefineTheme {
+    DefineTheme(darkTheme = true) {
         MainScreen(
             queryVariants = listOf(
                 QueryVariant.GOOGLE_DEFINE,
