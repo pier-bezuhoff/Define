@@ -31,7 +31,9 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            DefineTheme() {
+            DefineTheme(
+//                darkTheme = true
+            ) {
                 val context = LocalContext.current
                 val darkColorScheme = LocalIsDarkTheme.current
                 val toolbarColor = MaterialTheme.colorScheme.primary
@@ -64,7 +66,7 @@ private fun openTab(
 ) {
     val displayHeight = context.resources.displayMetrics.heightPixels
     val height = (0.7*displayHeight).roundToInt()
-    val intent = buildCustomTabsIntent(500, lightColorScheme, toolbarColor.toArgb())
+    val intent = buildCustomTabsIntent(height, lightColorScheme, toolbarColor.toArgb())
     intent.launchUrl(context, url.toUri())
 //        intent.intent.data = url.toUri()
 //        context.startActivity(intent.intent)

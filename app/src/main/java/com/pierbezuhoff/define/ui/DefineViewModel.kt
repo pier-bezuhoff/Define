@@ -1,6 +1,7 @@
 package com.pierbezuhoff.define.ui
 
 import android.content.Context
+import androidx.compose.ui.graphics.Color
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
@@ -18,6 +19,7 @@ import com.pierbezuhoff.define.data.saveQueryVariantsFile
 import com.pierbezuhoff.define.dataStore
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -36,21 +38,31 @@ class DefineViewModel(
     private var fileSavingJob: Job? = null
 
     val queryVariants: MutableStateFlow<List<QueryVariant>> = MutableStateFlow(
-        listOf(QueryVariant.DEFAULT)
+        listOf(
+            QueryVariant.DEFAULT,
+            QueryVariant(
+                "https://jisho.org/search/$",
+                "Jisho",
+                Color(62, 221, 0, alpha = 150)
+            )
+        )
     )
     val queryHistory: MutableStateFlow<List<Query>> = MutableStateFlow(
         emptyList()
     )
     val selectedQueryVariantIndex: StateFlow<Int> = dataStore.data
         .map { it[QUERY_VARIANT_INDEX] ?: 0 }
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000L), 0)
+        .stateInWhileSubscribed(initialValue = 0)
     val selectedQueryVariant: StateFlow<QueryVariant> =
         selectedQueryVariantIndex.combine(queryVariants) { index, variants ->
             if (index in variants.indices)
                 variants[index]
             else
                 QueryVariant.DEFAULT
-        }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000L), QueryVariant.DEFAULT)
+        }.stateInWhileSubscribed(initialValue = QueryVariant.DEFAULT)
+
+    private fun <T> Flow<T>.stateInWhileSubscribed(initialValue: T): StateFlow<T> =
+        stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000L), initialValue)
 
     fun loadInitialDataFromDisk() {
         println("loading data...")
@@ -60,9 +72,11 @@ class DefineViewModel(
                 loadQueryVariantsFile(applicationContext, QUERY_VARIANTS_FILENAME)
                     .onSuccess { newQueryVariants ->
                         println("loaded qv: $newQueryVariants")
-                        queryVariantsSize = newQueryVariants.size
-                        viewModelScope.launch {
-                            queryVariants.update { newQueryVariants }
+                        if (newQueryVariants.isNotEmpty()) {
+                            queryVariantsSize = newQueryVariants.size
+                            viewModelScope.launch {
+                                queryVariants.update { newQueryVariants }
+                            }
                         }
                     }
                 loadQueryHistoryFile(applicationContext, QUERY_HISTORY_FILENAME, queryVariantsSize)
@@ -114,7 +128,11 @@ class DefineViewModel(
         }
     }
 
-    fun changeQueryVariant(newQueryVariantIndex: Int) {
+    fun updateQueryVariants(newVariants: List<QueryVariant>) {
+        queryVariants.update { newVariants }
+    }
+
+    fun changeSelectedQueryVariant(newQueryVariantIndex: Int) {
         viewModelScope.launch {
             dataStore.edit { settings ->
                 settings[QUERY_VARIANT_INDEX] = newQueryVariantIndex

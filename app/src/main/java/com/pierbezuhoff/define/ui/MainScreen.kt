@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -50,11 +51,16 @@ import com.pierbezuhoff.define.data.Query
 import com.pierbezuhoff.define.data.QueryVariant
 import com.pierbezuhoff.define.ui.theme.DefineTheme
 import kotlinx.coroutines.launch
+import kotlinx.serialization.Serializable
+
+@Serializable
+object MainScreen
 
 @Composable
-fun App(
+fun MainScreenRoot(
     viewModel: DefineViewModel,
     openTab: (url: String) -> Unit,
+    goToSettings: () -> Unit,
     quitApp: () -> Unit,
 ) {
     val queryVariants: List<QueryVariant> by viewModel.queryVariants.collectAsStateWithLifecycle()
@@ -75,7 +81,7 @@ fun App(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MainScreen(
+private fun MainScreen(
     queryVariants: List<QueryVariant>,
     queryHistory: List<Query>,
     selectedQueryVariantIndex: Int,
@@ -86,6 +92,7 @@ fun MainScreen(
     openTab: (url: String) -> Unit,
     quitApp: () -> Unit,
 ) {
+    println(queryHistory)
     var queryTFValue by remember {
         mutableStateOf(TextFieldValue(initialQueryInput, TextRange(initialQueryInput.length)))
     }
@@ -121,7 +128,7 @@ fun MainScreen(
                         tonalElevation = 4.dp,
                     ) {
                         Text(
-                            text = selectedQueryVariant.template,
+                            text = selectedQueryVariant.name,
                             modifier = Modifier
                                 .padding(4.dp)
                             ,
