@@ -1,10 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- NOTE: don't forget to apply changes to themes (v33) -->
 <resources>
-
-    <style name="Theme.Define" parent="android:Theme.Material.Light.NoActionBar" />
-
-    <!-- reference: https://developer.android.com/develop/ui/views/launch/splash-screen -->
     <style name="Theme.Define.Starting" parent="Theme.SplashScreen">
         <!-- Set the splash screen background, animated icon, and animation duration. -->
         <item name="windowSplashScreenBackground">@color/launcher_bg</item>
@@ -12,6 +7,8 @@
         <item name="windowSplashScreenAnimatedIcon">@drawable/ic_launcher_animated</item>
         <!-- Required for animated icons. -->
         <!--        <item name="windowSplashScreenAnimationDuration">200</item>-->
+        <item name="android:windowSplashScreenIconBackgroundColor">@color/launcher_bg</item>
+        <item name="android:windowSplashScreenBehavior">icon_preferred</item>
         <!-- Set the theme of the Activity that directly follows your splash screen. This is required. -->
         <item name="postSplashScreenTheme">@style/Theme.Define</item>
     </style>
