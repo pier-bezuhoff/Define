@@ -17,6 +17,10 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -57,6 +61,8 @@ fun SettingsScreen(
     val colorColumnWeight = 0.1f
     val nameColumnWeight = 0.3f
     val templateColumnWeight = 0.6f
+    var showColorPickerDialog by remember { mutableStateOf(false) }
+    var colorPickerForVariantAt by remember { mutableIntStateOf(-1) }
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
@@ -111,11 +117,8 @@ fun SettingsScreen(
                     ) {
                         IconButton(
                             onClick = {
-                                updateQueryVariantAt(
-                                    index,
-                                    // TODO: add color picker w/ alpha
-                                    variant.copy(color = Color.Green)
-                                )
+                                colorPickerForVariantAt = index
+                                showColorPickerDialog = true
                             },
                             modifier =
                                 Modifier.weight(colorColumnWeight)
@@ -156,6 +159,20 @@ fun SettingsScreen(
                     }
                 }
             }
+        }
+        if (showColorPickerDialog) {
+            val targetVariant = queryVariants[colorPickerForVariantAt]
+            ColorPickerDialog(
+                currentColor = targetVariant.color,
+                onCancel = { showColorPickerDialog = false },
+                onConfirm = { newColor ->
+                    showColorPickerDialog = false
+                    updateQueryVariantAt(
+                        colorPickerForVariantAt,
+                        targetVariant.copy(color = newColor)
+                    )
+                }
+            )
         }
     }
 }
