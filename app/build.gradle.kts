@@ -56,6 +56,7 @@ dependencies {
     implementation(libs.androidx.browser)
     implementation(libs.androidx.datastore)
     implementation(libs.kotlinx.serialization.json)
+    implementation(libs.colormath)
     androidTestImplementation(platform(libs.compose.bom))
     debugImplementation(libs.compose.ui.tooling)
     debugImplementation(libs.compose.ui.test.manifest)

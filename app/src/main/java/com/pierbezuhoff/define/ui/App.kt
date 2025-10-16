@@ -1,13 +1,9 @@
 package com.pierbezuhoff.define.ui
 
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.State
-import androidx.compose.runtime.getValue
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.pierbezuhoff.define.data.QueryVariant
 
 @Composable
 fun App(
@@ -35,7 +31,7 @@ fun App(
                 viewModel = viewModel,
                 goBack = {
                     navController.navigateUp()
-                }
+                },
             )
         }
     }

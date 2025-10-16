@@ -4,7 +4,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Card
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
@@ -84,8 +83,8 @@ fun SettingsScreen(
         }
     ) { paddingValues ->
         Surface(Modifier.padding(paddingValues)) {
+            // Grid: Color | Name | Template
             Column {
-                // Grid: Color | Name | Template
                 Row(Modifier.fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
@@ -114,9 +113,8 @@ fun SettingsScreen(
                             onClick = {
                                 updateQueryVariantAt(
                                     index,
-                                    variant.copy(
-                                        color = Color.Green
-                                    )
+                                    // TODO: add color picker w/ alpha
+                                    variant.copy(color = Color.Green)
                                 )
                             },
                             modifier =
@@ -133,9 +131,7 @@ fun SettingsScreen(
                             onValueChange = { newName ->
                                 updateQueryVariantAt(
                                     index,
-                                    variant.copy(
-                                        name = newName
-                                    )
+                                    variant.copy(name = newName)
                                 )
                             },
                             modifier = Modifier
@@ -148,9 +144,7 @@ fun SettingsScreen(
                             onValueChange = { newTemplate ->
                                 updateQueryVariantAt(
                                     index,
-                                    variant.copy(
-                                        template = newTemplate
-                                    )
+                                    variant.copy(template = newTemplate)
                                 )
                             },
                             modifier = Modifier
