@@ -66,11 +66,16 @@ private fun openTab(
     toolbarColor: Color,
     url: String,
 ) {
+    println("openTab $url")
     val displayHeight = context.resources.displayMetrics.heightPixels
     val height = (0.7*displayHeight).roundToInt()
     val intent = buildCustomTabsIntent(height, lightColorScheme, toolbarColor.toArgb())
-    intent.launchUrl(context, url.toUri())
+    try {
+        intent.launchUrl(context, url.toUri())
 //        intent.intent.data = url.toUri()
 //        context.startActivity(intent.intent)
+    } catch (e: Exception) {
+        e.printStackTrace()
+    }
 }
 

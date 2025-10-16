@@ -136,8 +136,13 @@ class DefineViewModel(
         }
     }
 
-    fun updateQueryVariants(newVariants: List<QueryVariant>) {
-        queryVariants.update { newVariants }
+    fun addNewQueryVariant(newVariant: QueryVariant) {
+        queryVariants.update {
+            if (newVariant in it)
+                it
+            else
+                it + newVariant
+        }
     }
 
     fun changeSelectedQueryVariant(newQueryVariantIndex: Int) {

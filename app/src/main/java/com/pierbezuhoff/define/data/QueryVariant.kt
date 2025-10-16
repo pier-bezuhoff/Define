@@ -10,9 +10,9 @@ data class QueryVariant(
     val color: Color,
 ) {
     init {
-        require(template.any { it == '$' }) {
-            "Template must have a '$' to be substituted with query content"
-        }
+//        require(template.any { it == '$' }) {
+//            "Template must have a '$' to be substituted with query content"
+//        }
         require(name.indexOf(FIELD_SEPARATOR) == -1) {
             "Name must not contain field separator $FIELD_SEPARATOR"
         }
@@ -30,6 +30,11 @@ data class QueryVariant(
             Color(0, 100, 200, 120),
         )
         val DEFAULT: QueryVariant = GOOGLE_DEFINE
+        val DIDACTIC_EXAMPLE = QueryVariant(
+            color = Color(0xFF_F08A5D),
+            name = "New name",
+            template = "https://define-word-at-dollar-sign.com/search/$",
+        )
     }
 }
 

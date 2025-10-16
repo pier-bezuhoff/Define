@@ -14,12 +14,12 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -48,6 +48,7 @@ fun SettingsScreenRoot(
     SettingsScreen(
         queryVariants = queryVariants,
         updateQueryVariantAt = viewModel::updateQueryVariantAt,
+        addNewQueryVariant = viewModel::addNewQueryVariant,
         goBack = goBack,
     )
 }
@@ -57,6 +58,7 @@ fun SettingsScreenRoot(
 fun SettingsScreen(
     queryVariants: List<QueryVariant>,
     updateQueryVariantAt: (index: Int, newQueryVariant: QueryVariant) -> Unit,
+    addNewQueryVariant: (QueryVariant) -> Unit,
     goBack: () -> Unit,
 ) {
     val colorColumnWeight = 0.1f
@@ -159,7 +161,17 @@ fun SettingsScreen(
                         )
                     }
                 }
-                // add new
+                TextButton(
+                    onClick = {
+                        addNewQueryVariant(QueryVariant.DIDACTIC_EXAMPLE)
+                    },
+                    modifier = Modifier
+                        .padding(horizontal = 16.dp, vertical = 8.dp)
+                        .align(Alignment.CenterHorizontally)
+                    ,
+                ) {
+                    Text("Add new Search template")
+                }
             }
         }
         if (showColorPickerDialog) {
@@ -190,6 +202,7 @@ fun SettingsScreenPreview() {
             QueryVariant.GOOGLE_DEFINE.copy(template = "smol$"),
         ),
         updateQueryVariantAt = { _, _ -> },
+        addNewQueryVariant = {},
         goBack = {}
     )
 }
