@@ -14,17 +14,21 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FabPosition
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.MenuDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -74,7 +78,9 @@ fun MainScreenRoot(
         selectedQueryVariant = selectedQueryVariant,
         recordNewQuery = viewModel::recordNewQuery,
         deleteQueryAt = viewModel::deleteQueryAt,
+        changeSelectedQueryVariant = viewModel::changeSelectedQueryVariant,
         openTab = openTab,
+        goToSettings = goToSettings,
         quitApp = quitApp,
     )
 }
@@ -89,18 +95,19 @@ private fun MainScreen(
     initialQueryInput: String = "",
     recordNewQuery: (Query) -> Unit,
     deleteQueryAt: (index: Int) -> Unit,
+    changeSelectedQueryVariant: (newQueryVariantIndex: Int) -> Unit,
     openTab: (url: String) -> Unit,
+    goToSettings: () -> Unit,
     quitApp: () -> Unit,
 ) {
-    println(queryHistory)
     var queryTFValue by remember {
         mutableStateOf(TextFieldValue(initialQueryInput, TextRange(initialQueryInput.length)))
     }
-    // setting: query variants
     val focusRequester = remember { FocusRequester() }
     val focusManager = LocalFocusManager.current
     val snackbarHostState = remember { SnackbarHostState() }
     val coroutineScope = rememberCoroutineScope()
+    var queryVariantSelectorIsExpanded by remember { mutableStateOf(false) }
 
     fun search() {
         val queryContent = queryTFValue.text.trim()
@@ -127,22 +134,66 @@ private fun MainScreen(
                         shape = MaterialTheme.shapes.small,
                         tonalElevation = 4.dp,
                     ) {
-                        Text(
-                            text = selectedQueryVariant.name,
+                        TextButton(
+                            onClick = {
+                                queryVariantSelectorIsExpanded = !queryVariantSelectorIsExpanded
+                            },
                             modifier = Modifier
                                 .padding(4.dp)
                             ,
-                            overflow = TextOverflow.Ellipsis,
-                            style = MaterialTheme.typography.titleMedium,
-                        )
+                            shape = MaterialTheme.shapes.small,
+                        ) {
+                            Text(
+                                text = selectedQueryVariant.name,
+                                overflow = TextOverflow.Ellipsis,
+                                style = MaterialTheme.typography.titleMedium,
+                            )
+                        }
+                        DropdownMenu(
+                            expanded = queryVariantSelectorIsExpanded,
+                            onDismissRequest = { queryVariantSelectorIsExpanded = false },
+                            modifier = Modifier.padding(horizontal = 8.dp)
+                        ) {
+                            queryVariants.forEachIndexed { index, variant ->
+                                DropdownMenuItem(
+                                    text = { Text(variant.name) },
+                                    onClick = {
+                                        queryVariantSelectorIsExpanded = false
+                                        changeSelectedQueryVariant(index)
+                                    },
+                                    leadingIcon = {
+                                        Icon(
+                                            painterResource(R.drawable.stroke_circle),
+                                            "Search engine",
+                                            tint = variant.color,
+                                        )
+                                    },
+                                    colors = MenuDefaults.itemColors().copy(
+                                        textColor =
+                                            if (selectedQueryVariantIndex == index)
+                                                MaterialTheme.colorScheme.primary
+                                            else
+                                                MaterialTheme.colorScheme.onSurface
+                                    )
+                                )
+                            }
+                        }
+                    }
+                },
+                navigationIcon = {
+                    IconButton(
+                        onClick = quitApp,
+                    ) {
+                        Icon(painterResource(R.drawable.close), "Close the app")
                     }
                 },
                 actions = {
                     IconButton(
                         onClick = {
-                            coroutineScope.launch {
-                                snackbarHostState.showSnackbar("open query variant settings")
-                            }
+                            goToSettings()
+//                            coroutineScope.launch {
+//                                snackbarHostState.showSnackbar("open query variant settings")
+//                            }
                         }
                     ) {
                         Icon(painterResource(R.drawable.settings), "Settings")
@@ -184,15 +235,17 @@ private fun MainScreen(
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 itemsIndexed(queryHistory) { index, query ->
-                    val color = queryVariants[query.queryVariantIndex].color
+                    val variant = queryVariants[query.queryVariantIndex]
                     QueryCard(
                         index = index,
                         query = query,
                         setQueryTFValue = { queryTFValue = it },
-                        selectedQueryVariant = selectedQueryVariant,
-                        color = color,
+                        color = variant.color,
                         deleteQueryAt = deleteQueryAt,
-                        openTab = openTab,
+                        openQueryTab = {
+                            val url = variant.render(query.content)
+                            openTab(url)
+                        },
                     )
                 }
             }
@@ -205,10 +258,9 @@ private fun QueryCard(
     index: Int,
     query: Query,
     setQueryTFValue: (TextFieldValue) -> Unit,
-    selectedQueryVariant: QueryVariant,
     color: Color,
     deleteQueryAt: (index: Int) -> Unit,
-    openTab: (url: String) -> Unit,
+    openQueryTab: () -> Unit,
 ) {
     Card(
         onClick = {
@@ -216,8 +268,7 @@ private fun QueryCard(
             setQueryTFValue(
                 TextFieldValue(query.content, TextRange(query.content.length))
             )
-            val url = selectedQueryVariant.render(query.content)
-            openTab(url)
+            openQueryTab()
         },
         modifier = Modifier
             .padding(4.dp)
@@ -269,6 +320,8 @@ fun MainScreenPreview() {
         MainScreen(
             queryVariants = listOf(
                 QueryVariant.GOOGLE_DEFINE,
+                QueryVariant.GOOGLE_DEFINE.copy(name = "Example"),
+                QueryVariant.GOOGLE_DEFINE.copy(name = "A longer name for a change"),
             ),
             queryHistory = listOf(
                 Query(0, "hi"),
@@ -281,8 +334,10 @@ fun MainScreenPreview() {
             selectedQueryVariant = QueryVariant.GOOGLE_DEFINE,
             recordNewQuery = {},
             deleteQueryAt = {},
+            changeSelectedQueryVariant = {},
             openTab = {},
-            quitApp = {}
+            goToSettings = {},
+            quitApp = {},
         )
     }
 }

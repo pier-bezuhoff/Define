@@ -43,7 +43,7 @@ class DefineViewModel(
             QueryVariant(
                 "https://jisho.org/search/$",
                 "Jisho",
-                Color(62, 221, 0, alpha = 150)
+                Color(62, 221, 0, alpha = 80)
             )
         )
     )
@@ -125,6 +125,14 @@ class DefineViewModel(
             val history = it.toMutableList()
             history.removeAt(index)
             history
+        }
+    }
+
+    fun updateQueryVariantAt(index: Int, newVariant: QueryVariant) {
+        queryVariants.update {
+            val list = it.toMutableList()
+            list[index] = newVariant
+            return@update list
         }
     }
 

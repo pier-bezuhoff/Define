@@ -31,12 +31,8 @@ fun App(
             )
         }
         composable<SettingsScreen> {
-            val queryVariants: List<QueryVariant> by viewModel.queryVariants.collectAsStateWithLifecycle()
-            SettingsScreen(
-                queryVariants = queryVariants,
-                saveSettings = { variants ->
-                    viewModel.updateQueryVariants(variants)
-                },
+            SettingsScreenRoot(
+                viewModel = viewModel,
                 goBack = {
                     navController.navigateUp()
                 }
