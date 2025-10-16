@@ -20,6 +20,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -61,8 +62,8 @@ fun SettingsScreen(
     val colorColumnWeight = 0.1f
     val nameColumnWeight = 0.3f
     val templateColumnWeight = 0.6f
-    var showColorPickerDialog by remember { mutableStateOf(false) }
-    var colorPickerForVariantAt by remember { mutableIntStateOf(-1) }
+    var showColorPickerDialog by rememberSaveable { mutableStateOf(false) }
+    var colorPickerForVariantAt by rememberSaveable { mutableIntStateOf(-1) }
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
@@ -158,6 +159,7 @@ fun SettingsScreen(
                         )
                     }
                 }
+                // add new
             }
         }
         if (showColorPickerDialog) {

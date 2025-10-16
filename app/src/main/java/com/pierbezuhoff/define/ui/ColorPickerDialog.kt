@@ -1,11 +1,13 @@
 package com.pierbezuhoff.define.ui
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
@@ -21,11 +23,14 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -47,10 +52,10 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onKeyEvent
+import androidx.compose.ui.modifier.ModifierLocalConsumer
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.platform.LocalWindowInfo
@@ -75,18 +80,18 @@ internal val PREDEFINED_COLORS = listOf(
     // RGB & CMY[-K] -> R Y G C B M
     Color.Red, Color.Yellow, Color.Green, Color.Cyan, Color.Blue, Color.Magenta,
     // fun colors
-//        DodeclustersColors.peachyPink,
-//        DodeclustersColors.pinkishRed,
-//        DodeclustersColors.venousBloodRed,
-//        DodeclustersColors.deepBrown,
-//        DodeclustersColors.orange,
-//        DodeclustersColors.orangeOrange,
-//        DodeclustersColors.goldenBananaYellow,
-//        DodeclustersColors.veryDarkForestyGreen,
-//        DodeclustersColors.aquamarine,
-//        DodeclustersColors.teal,
-//        DodeclustersColors.darkPurple,
-//        DodeclustersColors.skyBlue,
+    Color(0xFF_FFC0CB),
+    Color(0xFF_FF7373),
+    Color(0xFF_800000),
+    Color(0xFF_321E1E),
+    Color(0xFF_F08A5D),
+    Color(0xFF_FFA500),
+    Color(0xFF_FFD700),
+    Color(0xFF_065535),
+    Color(0xFF_08D9D6), // visually similar to cyan
+    Color(0xFF_008080),
+    Color(0xFF_6A2C70),
+    Color(0xff_2ca3ff),
 )
 
 @Composable
@@ -150,10 +155,7 @@ fun ColorPickerDialog(
         ) {
             if (isLandscape) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text(
-                        "Pick a color",
-                        Modifier.align(Alignment.CenterHorizontally),
-                    )
+                    DialogTitle()
                     Row {
                         Column(horizontalAlignment = Alignment.End) {
                             ColorPickerDisplay(
@@ -172,11 +174,9 @@ fun ColorPickerDialog(
                                     setColor = { colorState.value = HsvColor.from(it) },
                                     onConfirm = { onConfirm(colorState.value.toColor()) }
                                 )
-                                TextButton(onClick = onCancel) {
-                                    Text("Cancel")
-                                }
-                                TextButton(onClick = { onConfirm(colorState.value.toColor()) }) {
-                                    Text("OK")
+                                OkButton(onClick = onCancel)
+                                CancelButton {
+                                    onConfirm(colorState.value.toColor())
                                 }
                             }
                         }
@@ -241,10 +241,7 @@ fun ColorPickerDialog(
                     ,
                     horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
-                    Text(
-                        "Pick a color",
-                        Modifier.align(Alignment.CenterHorizontally),
-                    )
+                    DialogTitle()
                     ColorPickerDisplay(
                         colorState,
                         Modifier.fillMaxWidth(
@@ -255,7 +252,10 @@ fun ColorPickerDialog(
                         Box(
                             Modifier
                                 .padding(top = 4.dp, start = 4.dp, end = 8.dp)
-                                .background(lightDarkHorizontalGradientBrush, MaterialTheme.shapes.medium)
+                                .background(
+                                    lightDarkHorizontalGradientBrush,
+                                    MaterialTheme.shapes.medium
+                                )
                                 .padding(12.dp)
                                 .padding(bottom = 40.dp) // adjust for 2nd circle-box offset
                         ) {
@@ -307,16 +307,58 @@ fun ColorPickerDialog(
                             setColor = { colorState.value = HsvColor.from(it) },
                             onConfirm = { onConfirm(colorState.value.toColor()) },
                         )
-                        TextButton(onClick = onCancel) {
-                            Text("Cancel")
-                        }
-                        TextButton(onClick = { onConfirm(colorState.value.toColor()) }) {
-                            Text("OK")
+                        OkButton(onClick = onCancel)
+                        CancelButton {
+                            onConfirm(colorState.value.toColor())
                         }
                     }
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun ColumnScope.DialogTitle() {
+    Text(
+        "Pick a color",
+        Modifier
+            .padding(16.dp)
+            .align(Alignment.CenterHorizontally)
+        ,
+        style = MaterialTheme.typography.titleMedium,
+    )
+}
+
+@Composable
+private fun OkButton(
+    onClick: () -> Unit,
+) {
+    Button(
+        onClick = onClick,
+        modifier = Modifier.padding(4.dp),
+        border = BorderStroke(2.dp, MaterialTheme.colorScheme.primary),
+        shape = CircleShape,
+    ) {
+        Text("OK", style = MaterialTheme.typography.titleLarge)
+    }
+}
+
+@Composable
+private fun CancelButton(
+    onClick: () -> Unit,
+) {
+    val color = MaterialTheme.colorScheme.onSurface
+    OutlinedButton(
+        onClick = onClick,
+        modifier = Modifier.padding(4.dp),
+        colors = ButtonDefaults.outlinedButtonColors().copy(
+            contentColor = color
+        ),
+        border = BorderStroke(2.dp, color),
+        shape = CircleShape,
+    ) {
+        Text("Cancel", style = MaterialTheme.typography.titleLarge)
     }
 }
 
