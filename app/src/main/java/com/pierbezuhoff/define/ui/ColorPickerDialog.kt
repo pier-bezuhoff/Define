@@ -174,8 +174,8 @@ fun ColorPickerDialog(
                                     setColor = { colorState.value = HsvColor.from(it) },
                                     onConfirm = { onConfirm(colorState.value.toColor()) }
                                 )
-                                OkButton(onClick = onCancel)
-                                CancelButton {
+                                CancelButton(onClick = onCancel)
+                                OkButton {
                                     onConfirm(colorState.value.toColor())
                                 }
                             }
@@ -307,8 +307,8 @@ fun ColorPickerDialog(
                             setColor = { colorState.value = HsvColor.from(it) },
                             onConfirm = { onConfirm(colorState.value.toColor()) },
                         )
-                        OkButton(onClick = onCancel)
-                        CancelButton {
+                        CancelButton(onClick = onCancel)
+                        OkButton {
                             onConfirm(colorState.value.toColor())
                         }
                     }

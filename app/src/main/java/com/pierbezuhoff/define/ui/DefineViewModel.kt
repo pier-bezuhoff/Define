@@ -40,11 +40,11 @@ class DefineViewModel(
     val queryVariants: MutableStateFlow<List<QueryVariant>> = MutableStateFlow(
         listOf(
             QueryVariant.DEFAULT,
-            QueryVariant(
-                "https://jisho.org/search/$",
-                "Jisho",
-                Color(62, 221, 0, alpha = 80)
-            )
+//            QueryVariant(
+//                "https://jisho.org/search/$",
+//                "Jisho",
+//                Color(62, 221, 0, alpha = 80)
+//            ),
         )
     )
     val queryHistory: MutableStateFlow<List<Query>> = MutableStateFlow(

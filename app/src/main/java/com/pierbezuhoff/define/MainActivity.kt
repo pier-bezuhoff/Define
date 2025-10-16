@@ -66,7 +66,7 @@ private fun openTab(
     toolbarColor: Color,
     url: String,
 ) {
-    println("openTab $url")
+//    println("openTab $url")
     val displayHeight = context.resources.displayMetrics.heightPixels
     val height = (0.7*displayHeight).roundToInt()
     val intent = buildCustomTabsIntent(height, lightColorScheme, toolbarColor.toArgb())

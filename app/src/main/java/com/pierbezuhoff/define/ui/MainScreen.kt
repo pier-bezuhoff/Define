@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -54,7 +53,6 @@ import com.pierbezuhoff.define.R
 import com.pierbezuhoff.define.data.Query
 import com.pierbezuhoff.define.data.QueryVariant
 import com.pierbezuhoff.define.ui.theme.DefineTheme
-import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -85,6 +83,7 @@ fun MainScreenRoot(
     )
 }
 
+// MAYBE: add filtering by selected query-variant
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun MainScreen(
