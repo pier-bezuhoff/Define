@@ -1,6 +1,7 @@
 package com.pierbezuhoff.define.ui
 
 import android.content.Context
+import androidx.compose.ui.graphics.Color
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
@@ -33,18 +34,18 @@ class DefineViewModel(
     private val dataStore: DataStore<Preferences>,
 ) : ViewModel() {
     private var fileLoadingIsDone = false
-    private var fileLoadingJob: Job? = null
+    var fileLoadingJob: Job? = null
     private var fileSavingJob: Job? = null
 
     val initialQueryInput: MutableStateFlow<String> = MutableStateFlow("")
     val queryVariants: MutableStateFlow<List<QueryVariant>> = MutableStateFlow(
         listOf(
             QueryVariant.DEFAULT,
-//            QueryVariant(
-//                "https://jisho.org/search/$",
-//                "Jisho",
-//                Color(62, 221, 0, alpha = 80)
-//            ),
+            QueryVariant(
+                "https://jisho.org/search/$",
+                "Jisho",
+                Color(62, 221, 0, alpha = 80)
+            ),
         )
     )
     val queryHistory: MutableStateFlow<List<Query>> = MutableStateFlow(
@@ -109,11 +110,6 @@ class DefineViewModel(
         initialQueryInput.update { input }
     }
 
-    // good new unique color default each time (eg hue % 30 in okhsl)
-    fun createNewQueryVariant(queryVariant: QueryVariant) {
-        queryVariants.update { it + queryVariant }
-    }
-
     fun recordNewQuery(query: Query) {
         // sus performance
         queryHistory.update {
@@ -140,6 +136,7 @@ class DefineViewModel(
         }
     }
 
+    // good new unique color default each time (eg hue % 30 in okhsl)
     fun addNewQueryVariant(newVariant: QueryVariant) {
         queryVariants.update {
             if (newVariant in it)

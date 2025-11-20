@@ -30,6 +30,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -53,6 +54,7 @@ import com.pierbezuhoff.define.R
 import com.pierbezuhoff.define.data.Query
 import com.pierbezuhoff.define.data.QueryVariant
 import com.pierbezuhoff.define.ui.theme.DefineTheme
+import kotlinx.coroutines.Job
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -79,6 +81,7 @@ fun MainScreenRoot(
         recordNewQuery = viewModel::recordNewQuery,
         deleteQueryAt = viewModel::deleteQueryAt,
         changeSelectedQueryVariant = viewModel::changeSelectedQueryVariant,
+        dataLoadingJob = viewModel.fileLoadingJob,
         openTab = openTab,
         goToSettings = goToSettings,
         quitApp = quitApp,
@@ -94,6 +97,7 @@ private fun MainScreen(
     selectedQueryVariantIndex: Int,
     selectedQueryVariant: QueryVariant,
     initialQueryInput: String = "",
+    dataLoadingJob: Job? = null,
     recordNewQuery: (Query) -> Unit,
     deleteQueryAt: (index: Int) -> Unit,
     changeSelectedQueryVariant: (newQueryVariantIndex: Int) -> Unit,
@@ -250,6 +254,13 @@ private fun MainScreen(
                     )
                 }
             }
+        }
+    }
+    LaunchedEffect(initialQueryInput, dataLoadingJob) {
+        if (initialQueryInput.isNotBlank()) {
+            // FIX: race cond with VM.loadInitialDataFromDisk
+//            dataLoadingJob?.join()
+//            search()
         }
     }
 }
