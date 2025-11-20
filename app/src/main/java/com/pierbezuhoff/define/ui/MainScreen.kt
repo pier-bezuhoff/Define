@@ -88,6 +88,8 @@ fun MainScreenRoot(
     )
 }
 
+// FIX: when the query text field is focused (keyboard), one cannot see the selected
+//  query variant
 // MAYBE: add filtering by selected query-variant
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

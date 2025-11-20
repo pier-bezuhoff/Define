@@ -2,5 +2,5 @@
     <string name="app_name">Define</string>
     <!-- NOTE: newer Android already injects Google's own Define in some contexts,
           we need to be distinct -->
-    <string name="context_menu_label">DEFine</string>
+    <string name="context_menu_label">Def:ine</string>
 </resources>
