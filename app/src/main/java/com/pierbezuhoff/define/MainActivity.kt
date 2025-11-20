@@ -1,6 +1,7 @@
 package com.pierbezuhoff.define
 
 import android.content.Context
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -32,6 +33,10 @@ class MainActivity : ComponentActivity() {
         installSplashScreen()
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+        if (intent.hasExtra(Intent.EXTRA_PROCESS_TEXT)) {
+            val text = intent.getCharSequenceExtra(Intent.EXTRA_PROCESS_TEXT).toString()
+            defineViewModel.setInitialQueryInput(text)
+        }
         setContent {
             DefineTheme(
 //                darkTheme = true

@@ -65,6 +65,7 @@ fun MainScreenRoot(
     goToSettings: () -> Unit,
     quitApp: () -> Unit,
 ) {
+    val initialQueryInput: String by viewModel.initialQueryInput.collectAsStateWithLifecycle()
     val queryVariants: List<QueryVariant> by viewModel.queryVariants.collectAsStateWithLifecycle()
     val queryHistory: List<Query> by viewModel.queryHistory.collectAsStateWithLifecycle()
     val selectedQueryVariantIndex: Int by viewModel.selectedQueryVariantIndex.collectAsStateWithLifecycle()
@@ -74,6 +75,7 @@ fun MainScreenRoot(
         queryHistory = queryHistory,
         selectedQueryVariantIndex = selectedQueryVariantIndex,
         selectedQueryVariant = selectedQueryVariant,
+        initialQueryInput = initialQueryInput,
         recordNewQuery = viewModel::recordNewQuery,
         deleteQueryAt = viewModel::deleteQueryAt,
         changeSelectedQueryVariant = viewModel::changeSelectedQueryVariant,

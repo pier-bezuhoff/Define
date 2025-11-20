@@ -1,7 +1,6 @@
 package com.pierbezuhoff.define.ui
 
 import android.content.Context
-import androidx.compose.ui.graphics.Color
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
@@ -37,6 +36,7 @@ class DefineViewModel(
     private var fileLoadingJob: Job? = null
     private var fileSavingJob: Job? = null
 
+    val initialQueryInput: MutableStateFlow<String> = MutableStateFlow("")
     val queryVariants: MutableStateFlow<List<QueryVariant>> = MutableStateFlow(
         listOf(
             QueryVariant.DEFAULT,
@@ -103,6 +103,10 @@ class DefineViewModel(
                 println("data persisted successfully.")
             }
         }
+    }
+
+    fun setInitialQueryInput(input: String) {
+        initialQueryInput.update { input }
     }
 
     // good new unique color default each time (eg hue % 30 in okhsl)
