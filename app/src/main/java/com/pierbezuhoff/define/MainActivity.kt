@@ -39,7 +39,7 @@ class MainActivity : ComponentActivity() {
         }
         setContent {
             DefineTheme(
-                darkTheme = true
+//                darkTheme = true
             ) {
                 val context = LocalContext.current
                 val darkColorScheme = LocalIsDarkTheme.current
