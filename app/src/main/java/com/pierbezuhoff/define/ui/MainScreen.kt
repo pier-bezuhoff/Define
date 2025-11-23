@@ -1,6 +1,10 @@
 package com.pierbezuhoff.define.ui
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -132,7 +136,6 @@ private fun MainScreen(
 
     Scaffold(
         modifier = Modifier
-            .imePadding()
             .fillMaxSize()
         ,
         topBar = {
@@ -214,7 +217,11 @@ private fun MainScreen(
         },
         bottomBar = {
             // query edit field
-            Surface(Modifier.fillMaxWidth()) {
+            Surface(
+                Modifier
+                    .imePadding() // moves it up when virtual kbd is opened
+                    .fillMaxWidth()
+            ) {
                 TextField(
                     value = queryTFValue,
                     onValueChange = { queryTFValue = it },
@@ -230,7 +237,13 @@ private fun MainScreen(
         snackbarHost = { SnackbarHost(snackbarHostState) },
         floatingActionButton = {
             FloatingActionButton(
-                onClick = { search() }
+                onClick = { search() },
+                modifier = Modifier.border(
+                    width = 1.dp,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.5f),
+                    shape = MaterialTheme.shapes.large,
+                ),
+                shape = MaterialTheme.shapes.large,
             ) {
                 Icon(painterResource(R.drawable.search), "Search")
             }
