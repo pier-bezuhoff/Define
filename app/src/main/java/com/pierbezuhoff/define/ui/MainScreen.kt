@@ -1,10 +1,7 @@
 package com.pierbezuhoff.define.ui
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -39,7 +36,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -59,7 +55,7 @@ import com.pierbezuhoff.define.R
 import com.pierbezuhoff.define.data.Query
 import com.pierbezuhoff.define.data.QueryVariant
 import com.pierbezuhoff.define.ui.theme.DefineTheme
-import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -86,7 +82,7 @@ fun MainScreenRoot(
         recordNewQuery = viewModel::recordNewQuery,
         deleteQueryAt = viewModel::deleteQueryAt,
         changeSelectedQueryVariant = viewModel::changeSelectedQueryVariant,
-        dataLoadingJob = viewModel.fileLoadingJob,
+        searchLauncher = viewModel.searchLauncher,
         openTab = openTab,
         goToSettings = goToSettings,
         quitApp = quitApp,
@@ -104,7 +100,7 @@ private fun MainScreen(
     selectedQueryVariantIndex: Int,
     selectedQueryVariant: QueryVariant,
     initialQueryInput: String = "",
-    dataLoadingJob: Job? = null,
+    searchLauncher: SharedFlow<Unit>? = null,
     recordNewQuery: (Query) -> Unit,
     deleteQueryAt: (index: Int) -> Unit,
     changeSelectedQueryVariant: (newQueryVariantIndex: Int) -> Unit,
@@ -112,13 +108,12 @@ private fun MainScreen(
     goToSettings: () -> Unit,
     quitApp: () -> Unit,
 ) {
-    var queryTFValue by remember {
+    var queryTFValue by remember(initialQueryInput) {
         mutableStateOf(TextFieldValue(initialQueryInput, TextRange(initialQueryInput.length)))
     }
     val focusRequester = remember { FocusRequester() }
     val focusManager = LocalFocusManager.current
     val snackbarHostState = remember { SnackbarHostState() }
-    val coroutineScope = rememberCoroutineScope()
     var queryVariantSelectorIsExpanded by remember { mutableStateOf(false) }
 
     fun search() {
@@ -276,11 +271,10 @@ private fun MainScreen(
             }
         }
     }
-    LaunchedEffect(initialQueryInput, dataLoadingJob) {
-        if (initialQueryInput.isNotBlank()) {
-            // FIX: race cond with VM.loadInitialDataFromDisk
-//            dataLoadingJob?.join()
-//            search()
+    LaunchedEffect(searchLauncher) {
+        searchLauncher?.collect {
+            println("text selection context menu action search launched")
+            search()
         }
     }
 }

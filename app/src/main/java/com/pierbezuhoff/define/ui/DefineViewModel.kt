@@ -19,7 +19,9 @@ import com.pierbezuhoff.define.data.saveQueryVariantsFile
 import com.pierbezuhoff.define.dataStore
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -37,7 +39,6 @@ class DefineViewModel(
     var fileLoadingJob: Job? = null
     private var fileSavingJob: Job? = null
 
-    val initialQueryInput: MutableStateFlow<String> = MutableStateFlow("")
     val queryVariants: MutableStateFlow<List<QueryVariant>> = MutableStateFlow(
         listOf(
             QueryVariant.DEFAULT,
@@ -61,6 +62,13 @@ class DefineViewModel(
             else
                 QueryVariant.DEFAULT
         }.stateInWhileSubscribed(initialValue = QueryVariant.DEFAULT)
+
+    val initialQueryInput: MutableStateFlow<String> = MutableStateFlow("")
+    val searchLauncher = MutableSharedFlow<Unit>(
+        replay = 0,
+        extraBufferCapacity = 1,
+        onBufferOverflow = BufferOverflow.DROP_OLDEST,
+    )
 
     private fun <T> Flow<T>.stateInWhileSubscribed(initialValue: T): StateFlow<T> =
         stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000L), initialValue)
@@ -90,6 +98,12 @@ class DefineViewModel(
                 fileLoadingIsDone = true
                 fileLoadingJob = null
                 println("data loaded successfully.")
+                viewModelScope.launch {
+                    val initialInput = initialQueryInput.value
+                    if (initialInput.isNotBlank()) {
+                        searchLauncher.tryEmit(Unit)
+                    }
+                }
             }
         }
     }
@@ -108,6 +122,9 @@ class DefineViewModel(
 
     fun setInitialQueryInput(input: String) {
         initialQueryInput.update { input }
+        if (fileLoadingIsDone && input.isNotBlank()) {
+            searchLauncher.tryEmit(Unit)
+        }
     }
 
     fun recordNewQuery(query: Query) {
